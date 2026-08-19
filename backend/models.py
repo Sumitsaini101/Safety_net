@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -17,3 +18,17 @@ class JourneyResponse(BaseModel):
     status: str
     is_expired: bool = False
     remaining_seconds: Optional[int] = None
+
+
+class NoteCreate(BaseModel):
+    """Request body for logging a note on an active journey."""
+    note: str = Field(..., min_length=1, description="Note text to analyze for sentiment/distress")
+
+
+class NoteResponse(BaseModel):
+    """Response model after AI note sentiment analysis."""
+    journey_id: int
+    status: str
+    sentiment_score: float
+    is_distress: bool
+    journey: JourneyResponse

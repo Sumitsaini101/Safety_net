@@ -57,9 +57,30 @@ export function useJourneys() {
     }
   }, []);
 
+  const sendNote = useCallback(async (journeyId, noteText) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/journey/${journeyId}/note`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: noteText }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Failed to send note');
+      }
+      const data = await res.json();
+      setError(null);
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  }, []);
+
   useEffect(() => {
     fetchJourneys();
   }, [fetchJourneys]);
 
-  return { journeys, loading, error, fetchJourneys, createJourney, markSafe };
+  return { journeys, loading, error, fetchJourneys, createJourney, markSafe, sendNote };
 }
+

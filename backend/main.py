@@ -1,10 +1,16 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI, HTTPException
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 from database import get_db, init_db
-from models import JourneyCreate, JourneyResponse
+from models import JourneyCreate, JourneyResponse, NoteCreate, NoteResponse
+# pyrefly: ignore [missing-import]
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+sia = SentimentIntensityAnalyzer()
 
 
 @asynccontextmanager
@@ -105,6 +111,42 @@ def mark_safe(journey_id: int):
     return _compute_journey_fields(dict(row))
 
 
+@app.post("/api/journey/{journey_id}/note", response_model=NoteResponse)
+def log_note(journey_id: int, note_data: NoteCreate):
+    """Analyze a journey note with local AI (vaderSentiment) for distress/emergency detection."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM journeys WHERE id = ?", (journey_id,)).fetchone()
+
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Journey not found")
+
+    scores = sia.polarity_scores(note_data.note)
+    compound_score = round(float(scores["compound"]), 4)
+    is_distress = compound_score <= -0.4
+
+    current_status = row["status"]
+    new_status = current_status
+
+    if is_distress and current_status == "active":
+        conn.execute("UPDATE journeys SET status = 'sos' WHERE id = ?", (journey_id,))
+        conn.commit()
+        new_status = "sos"
+
+    row = conn.execute("SELECT * FROM journeys WHERE id = ?", (journey_id,)).fetchone()
+    conn.close()
+
+    journey_resp = _compute_journey_fields(dict(row))
+
+    return NoteResponse(
+        journey_id=journey_id,
+        status=new_status,
+        sentiment_score=compound_score,
+        is_distress=is_distress,
+        journey=journey_resp,
+    )
+
+
 @app.get("/api/journeys", response_model=list[JourneyResponse])
 def get_journeys():
     """Return all journeys with computed status (expired active journeys become SOS)."""
@@ -116,5 +158,6 @@ def get_journeys():
 
 
 if __name__ == "__main__":
+    # pyrefly: ignore [missing-import]
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

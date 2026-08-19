@@ -9,13 +9,17 @@ function formatTime(totalSeconds) {
 }
 
 export default function Home() {
-  const { createJourney, markSafe } = useJourneys();
+  const { createJourney, markSafe, sendNote } = useJourneys();
   const [destination, setDestination] = useState('');
   const [duration, setDuration] = useState('');
   const [activeJourney, setActiveJourney] = useState(null);
   const [remaining, setRemaining] = useState(0);
   const [markedSafe, setMarkedSafe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [isAnalyzingNote, setIsAnalyzingNote] = useState(false);
+  const [noteFeedback, setNoteFeedback] = useState(null);
+  const [distressAlert, setDistressAlert] = useState(null);
   const intervalRef = useRef(null);
 
   // Countdown timer
@@ -44,6 +48,9 @@ export default function Home() {
       setActiveJourney(journey);
       setRemaining(journey.expected_duration_minutes * 60);
       setMarkedSafe(false);
+      setNoteText('');
+      setNoteFeedback(null);
+      setDistressAlert(null);
     } catch {
       // error handled in hook
     } finally {
@@ -65,15 +72,56 @@ export default function Home() {
     }
   };
 
+  const handleSendNote = async (e) => {
+    if (e) e.preventDefault();
+    if (!noteText.trim() || !activeJourney || isAnalyzingNote) return;
+
+    const currentNote = noteText.trim();
+    setIsAnalyzingNote(true);
+    setNoteFeedback(null);
+
+    try {
+      const response = await sendNote(activeJourney.id, currentNote);
+      if (response.status === 'sos' || response.is_distress) {
+        setActiveJourney((prev) => ({ ...prev, status: 'sos' }));
+        setDistressAlert({ score: response.sentiment_score, note: currentNote });
+        setNoteFeedback({
+          type: 'danger',
+          message: `🚨 Distress detected (Score: ${response.sentiment_score}). SOS triggered!`,
+        });
+      } else {
+        setNoteFeedback({
+          type: 'success',
+          message: `✓ Note analyzed & saved (Score: ${response.sentiment_score > 0 ? '+' : ''}${response.sentiment_score.toFixed(2)}) — Normal`,
+        });
+        setNoteText('');
+        setTimeout(() => {
+          setNoteFeedback((fb) => (fb?.type === 'success' ? null : fb));
+        }, 4000);
+      }
+    } catch (err) {
+      setNoteFeedback({
+        type: 'danger',
+        message: `Failed to analyze note: ${err.message}`,
+      });
+    } finally {
+      setIsAnalyzingNote(false);
+    }
+  };
+
   const handleReset = () => {
     setActiveJourney(null);
     setDestination('');
     setDuration('');
     setMarkedSafe(false);
     setRemaining(0);
+    setNoteText('');
+    setNoteFeedback(null);
+    setDistressAlert(null);
   };
 
   const isExpired = remaining <= 0 && activeJourney && !markedSafe;
+  const isSos = (activeJourney && activeJourney.status === 'sos') || isExpired;
 
   // Calculate progress for ring animation
   const totalSeconds = activeJourney ? activeJourney.expected_duration_minutes * 60 : 1;
@@ -158,10 +206,10 @@ export default function Home() {
         </div>
       ) : (
         /* ——— Active Journey View ——— */
-        <div className="card animate-fade-in">
+        <div className={`card animate-fade-in ${isSos ? 'sos-card flash' : ''}`}>
           <div className="journey-active-header">
-            <span className={`status-pill ${isExpired ? 'sos' : 'active'}`}>
-              {isExpired ? '⚠ EXPIRED' : '● ACTIVE'}
+            <span className={`status-pill ${isSos ? 'sos' : 'active'}`}>
+              {isSos ? '🚨 SOS' : '● ACTIVE'}
             </span>
             <h2>{activeJourney.destination}</h2>
           </div>
@@ -176,20 +224,77 @@ export default function Home() {
                 style={{
                   strokeDasharray: `${2 * Math.PI * 52}`,
                   strokeDashoffset: `${2 * Math.PI * 52 * (1 - progress)}`,
-                  stroke: isExpired ? 'var(--red)' : 'var(--emerald)',
+                  stroke: isSos ? 'var(--red)' : 'var(--emerald)',
                 }}
               />
             </svg>
-            <div className={`timer-display ${isExpired ? 'expired' : ''}`}>
-              {isExpired ? 'TIME UP' : formatTime(remaining)}
+            <div className={`timer-display ${isSos ? 'expired' : ''}`}>
+              {isSos ? (isExpired ? 'TIME UP' : 'DISTRESS') : formatTime(remaining)}
             </div>
           </div>
 
-          {isExpired && (
+          {isSos && (
             <div className="sos-banner flash">
               🚨 SOS — Emergency Contact Needed
+              {distressAlert && (
+                <div style={{ fontSize: '0.8rem', marginTop: '0.35rem', opacity: 0.9 }}>
+                  AI Distress Detected (Sentiment Score: {distressAlert.score})
+                </div>
+              )}
             </div>
           )}
+
+          {/* ——— Quick Note / Log Section ——— */}
+          <div className="note-section">
+            <label htmlFor="quick-note" className="note-label">
+              <span>Quick Note / Log</span>
+              <span className="ai-badge">Local AI</span>
+            </label>
+            <div className="note-input-row">
+              <input
+                id="quick-note"
+                type="text"
+                className="note-input"
+                placeholder="e.g. Someone is following me / Boarded bus"
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                disabled={isAnalyzingNote || isSubmitting}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSendNote();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn-send-note"
+                onClick={handleSendNote}
+                disabled={isAnalyzingNote || !noteText.trim() || isSubmitting}
+              >
+                {isAnalyzingNote ? (
+                  <span className="spinner-sm" />
+                ) : (
+                  'Send Note'
+                )}
+              </button>
+            </div>
+
+            {/* AI Analyzing Toast / Visual Indicator */}
+            {isAnalyzingNote && (
+              <div className="ai-status-indicator analyzing animate-fade-in">
+                <span className="spinner-sm" />
+                <span>AI analyzing note...</span>
+              </div>
+            )}
+
+            {/* Note Feedback Toast */}
+            {noteFeedback && !isAnalyzingNote && (
+              <div className={`ai-status-indicator ${noteFeedback.type} animate-fade-in`}>
+                {noteFeedback.message}
+              </div>
+            )}
+          </div>
 
           <button
             className="btn btn-safe"
@@ -215,3 +320,4 @@ export default function Home() {
     </div>
   );
 }
+
