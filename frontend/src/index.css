@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
-/* ─── Light Theme Design Tokens & Fluid System ─── */
+/* ─── Modern Dark-Mode Glassmorphism Design Tokens ─── */
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --bg-main: #f8fafc;
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
+  --bg-dark: #090d16;
+  --color-primary: #6366f1;
   --color-safe: #10b981;
-  --color-safe-glow: rgba(16, 185, 129, 0.25);
-  --color-sos: #ef4444;
-  --color-sos-glow: rgba(239, 68, 68, 0.25);
+  --color-sos: #f43f5e;
 }
 
 /* ─── Reset & Base Styling ─── */
@@ -23,130 +20,135 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
+  background-color: #090d16;
+  color-scheme: dark;
 }
 
 body {
   font-family: var(--font-sans);
-  color: #0f172a;
-  background: #f8fafc;
+  color: #f8fafc;
+  background: #090d16;
   min-height: 100dvh;
   overflow-x: hidden;
 }
 
-/* ─── Light Ambient Gradient Background ─── */
-.bg-light-mesh {
-  background: radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.6) 0px, transparent 50%),
-              radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.6) 0px, transparent 50%),
-              radial-gradient(at 50% 100%, rgba(224, 242, 254, 0.5) 0px, transparent 50%),
-              #f8fafc;
+/* ─── Deep Animated Gradient Background ─── */
+.bg-dark-mesh {
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.16) 0px, transparent 50%),
+              radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+              radial-gradient(at 0% 100%, rgba(14, 165, 233, 0.14) 0px, transparent 50%),
+              #090d16;
   background-attachment: fixed;
 }
 
-.bg-light-sos {
-  background: radial-gradient(at 50% 0%, rgba(254, 226, 226, 0.9) 0px, transparent 60%),
-              radial-gradient(at 100% 100%, rgba(255, 228, 230, 0.8) 0px, transparent 50%),
-              #fff1f2;
+.bg-dark-sos {
+  background: radial-gradient(at 50% 0%, rgba(225, 29, 72, 0.35) 0px, transparent 65%),
+              radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.25) 0px, transparent 50%),
+              #130206;
   background-attachment: fixed;
-  animation: sos-light-pulse 3s ease-in-out infinite;
+  animation: sos-dark-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes sos-light-pulse {
+@keyframes sos-dark-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.15));
+    filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.3));
   }
   50% {
-    filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.3));
+    filter: drop-shadow(0 0 35px rgba(244, 63, 94, 0.65));
   }
 }
 
-/* ─── Ambient Glow Highlights ─── */
-.ambient-light-glow {
+/* ─── Ambient Glow Blobs ─── */
+.ambient-dark-glow {
   position: fixed;
   top: 5%;
   left: 50%;
   transform: translateX(-50%);
-  width: 600px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.06) 50%, transparent 70%);
-  filter: blur(60px);
+  width: 700px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 70%);
+  filter: blur(70px);
   pointer-events: none;
   z-index: 0;
 }
 
-.ambient-light-sos {
+.ambient-dark-sos {
   position: fixed;
   top: 8%;
   left: 50%;
   transform: translateX(-50%);
-  width: 650px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, rgba(244, 63, 94, 0.15) 50%, transparent 75%);
-  filter: blur(50px);
+  width: 750px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.35) 0%, rgba(225, 29, 72, 0.2) 50%, transparent 75%);
+  filter: blur(60px);
   pointer-events: none;
   z-index: 0;
   animation: beacon-glow 1.8s ease-in-out infinite;
 }
 
-/* ─── Glassmorphic Light Cards ─── */
+/* ─── Modern Dark Glassmorphism Cards ─── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.03) inset;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(199, 210, 254, 0.9);
-  box-shadow: 0 10px 30px -4px rgba(99, 102, 241, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(99, 102, 241, 0.12);
 }
 
 .glass-card-sos {
-  background: rgba(255, 241, 242, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1.5px solid rgba(239, 68, 68, 0.5);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 30px -5px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(239, 68, 68, 0.15);
-  animation: emergency-card-pulse-light 1.8s infinite;
+  background: rgba(30, 7, 12, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(244, 63, 94, 0.6);
+  border-top: 1.5px solid rgba(251, 113, 133, 0.8);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 35px -5px rgba(244, 63, 94, 0.35), 0 0 0 1px rgba(244, 63, 94, 0.25);
+  animation: emergency-card-pulse-dark 1.8s infinite;
 }
 
-@keyframes emergency-card-pulse-light {
+@keyframes emergency-card-pulse-dark {
   0%, 100% {
-    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25), 0 0 0 1px rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.5);
   }
   50% {
-    box-shadow: 0 15px 40px -5px rgba(239, 68, 68, 0.35), 0 0 0 2px rgba(239, 68, 68, 0.4);
-    border-color: rgba(239, 68, 68, 0.8);
+    box-shadow: 0 15px 45px -5px rgba(244, 63, 94, 0.55), 0 0 0 2px rgba(251, 113, 133, 0.6);
+    border-color: rgba(251, 113, 133, 0.9);
   }
 }
 
-/* ─── Light Inputs ─── */
+/* ─── Dark Inputs ─── */
 .glass-input {
   width: 100%;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(71, 85, 105, 0.6);
   border-radius: 0.85rem;
   padding: 0.8rem 1rem;
-  color: #0f172a;
+  color: #f8fafc;
   font-size: 0.95rem;
   outline: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-input::placeholder {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .glass-input:focus {
-  background: #ffffff;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+  background: rgba(15, 23, 42, 0.9);
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 0 15px rgba(99, 102, 241, 0.2);
 }
 
 /* ─── Buttons ─── */
@@ -161,17 +163,17 @@ body {
   font-weight: 700;
   font-size: 0.95rem;
   color: #ffffff;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-  filter: brightness(1.04);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  filter: brightness(1.1);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -179,12 +181,12 @@ body {
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Radiant Emerald "I am Safe" Button with Bounce Effect */
+/* Glowing Emerald "I am Safe" Button with Bounce Effect */
 .btn-safe-glow {
   display: inline-flex;
   align-items: center;
@@ -196,23 +198,23 @@ body {
   font-weight: 800;
   font-size: 1.1rem;
   letter-spacing: 0.01em;
-  color: #ffffff;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #022c16;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.45), 0 8px 20px rgba(5, 150, 105, 0.35);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .btn-safe-glow:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.45);
-  filter: brightness(1.05);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 45px rgba(16, 185, 129, 0.65), 0 10px 30px rgba(5, 150, 105, 0.5);
+  filter: brightness(1.08);
 }
 
 .btn-safe-glow:active:not(:disabled) {
-  transform: scale(0.94) translateY(1px);
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+  transform: scale(0.93) translateY(1px);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
 }
 
 .btn-safe-glow:disabled {
@@ -221,36 +223,81 @@ body {
   transform: none;
 }
 
-/* ─── Massive Centered Timer Animations ─── */
-.timer-pulse-active {
-  animation: timer-breathe-light 2.5s ease-in-out infinite;
+/* ─── Emergency Calling Button ─── */
+.btn-emergency-call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.1rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #ffffff;
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes timer-breathe-light {
+.btn-emergency-call:hover {
+  background: rgba(244, 63, 94, 0.28);
+  border-color: rgba(244, 63, 94, 0.7);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-emergency-call:active {
+  transform: scale(0.97);
+}
+
+.btn-emergency-call-urgent {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #be123c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 25px rgba(225, 29, 72, 0.5), 0 4px 15px rgba(0, 0, 0, 0.4);
+  animation: urgent-call-breathe 1.5s ease-in-out infinite;
+}
+
+@keyframes urgent-call-breathe {
   0%, 100% {
+    box-shadow: 0 0 20px rgba(225, 29, 72, 0.45);
     transform: scale(1);
-    filter: drop-shadow(0 4px 15px rgba(99, 102, 241, 0.15));
   }
   50% {
+    box-shadow: 0 0 35px rgba(225, 29, 72, 0.8);
     transform: scale(1.02);
-    filter: drop-shadow(0 6px 25px rgba(99, 102, 241, 0.28));
+  }
+}
+
+/* ─── Massive Centered Timer Animations ─── */
+.timer-pulse-active {
+  animation: timer-breathe-dark 2.4s ease-in-out infinite;
+}
+
+@keyframes timer-breathe-dark {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.25));
+  }
+  50% {
+    transform: scale(1.025);
+    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.5));
   }
 }
 
 .timer-sos-pulse {
-  animation: timer-sos-alert-light 1.2s ease-in-out infinite;
+  animation: timer-sos-alert-dark 1.2s ease-in-out infinite;
 }
 
-@keyframes timer-sos-alert-light {
+@keyframes timer-sos-alert-dark {
   0%, 100% {
     transform: scale(1);
-    color: #dc2626;
-    filter: drop-shadow(0 4px 15px rgba(239, 68, 68, 0.25));
+    color: #fb7185;
+    filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.4));
   }
   50% {
-    transform: scale(1.05);
-    color: #b91c1c;
-    filter: drop-shadow(0 8px 30px rgba(239, 68, 68, 0.5));
+    transform: scale(1.06);
+    color: #ffffff;
+    filter: drop-shadow(0 0 35px rgba(244, 63, 94, 0.85));
   }
 }
 
@@ -270,6 +317,89 @@ body {
   50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 }
 
+/* ─── Leaflet Map Dark Theme Overrides & Animations ─── */
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+  background-color: #0b1120 !important;
+  z-index: 10;
+}
+
+.leaflet-tile {
+  filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.75);
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 1rem !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+/* Glowing GPS Marker */
+.gps-pulse-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: #38bdf8;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #0284c7;
+}
+
+.gps-pulse-marker::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.4);
+  animation: gps-wave 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes gps-wave {
+  0% { transform: scale(0.7); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* SOS Pin Pulse Marker */
+.sos-pulse-marker {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  background: #e11d48;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #e11d48;
+  animation: sos-marker-blink 1.2s infinite ease-in-out;
+}
+
+.sos-pulse-marker::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: rgba(225, 29, 72, 0.5);
+  animation: gps-wave 1.4s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes sos-marker-blink {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.15); filter: brightness(1.3); }
+}
+
 /* ─── Spinners ─── */
 .spinner {
   display: inline-block;
@@ -286,7 +416,7 @@ body {
   width: 20px;
   height: 20px;
   border: 2.5px solid rgba(99, 102, 241, 0.25);
-  border-top-color: #4f46e5;
+  border-top-color: #818cf8;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }

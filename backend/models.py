@@ -7,6 +7,8 @@ class JourneyCreate(BaseModel):
     """Request body for creating a new journey."""
     destination: str = Field(..., min_length=1, max_length=200, description="Destination name")
     expected_duration_minutes: int = Field(..., gt=0, le=1440, description="Expected duration in minutes")
+    latitude: Optional[float] = Field(None, description="GPS Latitude coordinate")
+    longitude: Optional[float] = Field(None, description="GPS Longitude coordinate")
 
 
 class JourneyResponse(BaseModel):
@@ -18,6 +20,8 @@ class JourneyResponse(BaseModel):
     status: str
     is_expired: bool = False
     remaining_seconds: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class NoteCreate(BaseModel):

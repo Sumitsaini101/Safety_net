@@ -27,10 +27,12 @@ It provides proactive safety monitoring by combining a **fail-safe countdown tim
 │      PHASE 1: CORE SAFETY NET     │      PHASE 2: AI GUARDIAN (NLP)     │
 ├───────────────────────────────────┼─────────────────────────────────────┤
 │  • Timed Journey Registration     │  • Real-Time Transit Quick Notes    │
-│  • Massive Centered Timer Gauge   │  • Local On-Device Sentiment AI     │
-│  • One-Tap "I am Safe" Check-in   │  • Distress Threshold Trigger (≤-0.4)│
-│  • Auto-Expiry Emergency SOS      │  • Dynamic Emergency SOS Shift      │
-│  • Live Monitor Dashboard & KPIs  │  • Real-Time Sentiment History Log  │
+│  • Live GPS Map Telemetry (OSM)   │  • Local On-Device Sentiment AI     │
+│  • Emergency Quick-Dial Hub (112) │  • Distress Threshold Trigger (≤-0.4)│
+│  • Massive Centered Timer Gauge   │  • Dynamic Emergency SOS Shift      │
+│  • One-Tap "I am Safe" Check-in   │  • Real-Time Sentiment History Log  │
+│  • Auto-Expiry Emergency SOS      │  • Live Fleet Community GPS Map     │
+│  • Live Monitor Dashboard & KPIs  │  • Click-to-Pan Incident Telemetry  │
 └───────────────────────────────────┴─────────────────────────────────────┘
 ```
 

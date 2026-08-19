@@ -79,17 +79,19 @@ def _compute_journey_fields(row: dict) -> JourneyResponse:
         status=status,
         is_expired=is_expired,
         remaining_seconds=max(remaining, 0) if status == "active" else 0,
+        latitude=row["latitude"] if "latitude" in row.keys() else None,
+        longitude=row["longitude"] if "longitude" in row.keys() else None,
     )
 
 
 @app.post("/api/journey", response_model=JourneyResponse, status_code=201)
 def create_journey(journey: JourneyCreate):
-    """Create a new journey with a destination and expected duration."""
+    """Create a new journey with a destination, expected duration, and optional GPS telemetry."""
     conn = get_db()
     now = datetime.now(timezone.utc).isoformat()
     cursor = conn.execute(
-        "INSERT INTO journeys (destination, start_time, expected_duration_minutes, status) VALUES (?, ?, ?, ?)",
-        (journey.destination, now, journey.expected_duration_minutes, "active"),
+        "INSERT INTO journeys (destination, start_time, expected_duration_minutes, status, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)",
+        (journey.destination, now, journey.expected_duration_minutes, "active", journey.latitude, journey.longitude),
     )
     conn.commit()
     journey_id = cursor.lastrowid

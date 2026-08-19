@@ -22,7 +22,7 @@ export function useJourneys() {
     }
   }, []);
 
-  const createJourney = useCallback(async (destination, expectedDurationMinutes) => {
+  const createJourney = useCallback(async (destination, expectedDurationMinutes, latitude = null, longitude = null) => {
     try {
       const res = await fetch(`${API_BASE}/api/journey`, {
         method: 'POST',
@@ -30,6 +30,8 @@ export function useJourneys() {
         body: JSON.stringify({
           destination,
           expected_duration_minutes: expectedDurationMinutes,
+          latitude,
+          longitude,
         }),
       });
       if (!res.ok) throw new Error('Failed to create journey');
