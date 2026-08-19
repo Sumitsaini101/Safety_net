@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
-/* ─── Modern Dark-Mode Glassmorphism Design Tokens ─── */
+/* ─── Premium SaaS Telemetry Design Tokens ─── */
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --bg-dark: #090d16;
-  --color-primary: #6366f1;
+  --bg-main: #f8fafc;
+  --color-primary: #4f46e5;
   --color-safe: #10b981;
-  --color-sos: #f43f5e;
+  --color-sos: #e11d48;
 }
 
 /* ─── Reset & Base Styling ─── */
@@ -20,135 +20,72 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #090d16;
-  color-scheme: dark;
+  background-color: #f8fafc;
 }
 
 body {
   font-family: var(--font-sans);
-  color: #f8fafc;
-  background: #090d16;
+  color: #0f172a;
+  background: #f8fafc;
   min-height: 100dvh;
   overflow-x: hidden;
 }
 
-/* ─── Deep Animated Gradient Background ─── */
-.bg-dark-mesh {
-  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 50%),
-              radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.16) 0px, transparent 50%),
-              radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
-              radial-gradient(at 0% 100%, rgba(14, 165, 233, 0.14) 0px, transparent 50%),
-              #090d16;
-  background-attachment: fixed;
-}
-
-.bg-dark-sos {
-  background: radial-gradient(at 50% 0%, rgba(225, 29, 72, 0.35) 0px, transparent 65%),
-              radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.25) 0px, transparent 50%),
-              #130206;
-  background-attachment: fixed;
-  animation: sos-dark-pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes sos-dark-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 35px rgba(244, 63, 94, 0.65));
-  }
-}
-
-/* ─── Ambient Glow Blobs ─── */
-.ambient-dark-glow {
-  position: fixed;
-  top: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 70%);
-  filter: blur(70px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.ambient-dark-sos {
-  position: fixed;
-  top: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 750px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.35) 0%, rgba(225, 29, 72, 0.2) 50%, transparent 75%);
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: 0;
-  animation: beacon-glow 1.8s ease-in-out infinite;
-}
-
-/* ─── Modern Dark Glassmorphism Cards ─── */
-.glass-card {
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 1.25rem;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.03) inset;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(99, 102, 241, 0.12);
-}
-
-.glass-card-sos {
-  background: rgba(30, 7, 12, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(244, 63, 94, 0.6);
-  border-top: 1.5px solid rgba(251, 113, 133, 0.8);
-  border-radius: 1.25rem;
-  box-shadow: 0 10px 35px -5px rgba(244, 63, 94, 0.35), 0 0 0 1px rgba(244, 63, 94, 0.25);
-  animation: emergency-card-pulse-dark 1.8s infinite;
-}
-
-@keyframes emergency-card-pulse-dark {
-  0%, 100% {
-    box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25), 0 0 0 1px rgba(244, 63, 94, 0.2);
-    border-color: rgba(244, 63, 94, 0.5);
-  }
-  50% {
-    box-shadow: 0 15px 45px -5px rgba(244, 63, 94, 0.55), 0 0 0 2px rgba(251, 113, 133, 0.6);
-    border-color: rgba(251, 113, 133, 0.9);
-  }
-}
-
-/* ─── Dark Inputs ─── */
-.glass-input {
-  width: 100%;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(71, 85, 105, 0.6);
-  border-radius: 0.85rem;
-  padding: 0.8rem 1rem;
-  color: #f8fafc;
-  font-size: 0.95rem;
-  outline: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+/* ─── Premium SaaS Card & Surface Tokens ─── */
+.saas-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-input::placeholder {
-  color: #64748b;
+.saas-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.02);
 }
 
-.glass-input:focus {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: #818cf8;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 0 15px rgba(99, 102, 241, 0.2);
+.saas-card-sos {
+  background: #fff1f2;
+  border-radius: 1rem;
+  border: 1.5px solid #fda4af;
+  box-shadow: 0 4px 14px -2px rgba(225, 29, 72, 0.15);
+  animation: sos-card-pulse-saas 2s infinite;
+}
+
+@keyframes sos-card-pulse-saas {
+  0%, 100% {
+    border-color: #fda4af;
+    box-shadow: 0 4px 14px -2px rgba(225, 29, 72, 0.15);
+  }
+  50% {
+    border-color: #f43f5e;
+    box-shadow: 0 8px 24px -2px rgba(225, 29, 72, 0.3);
+  }
+}
+
+/* ─── SaaS Inputs ─── */
+.saas-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #0f172a;
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.saas-input::placeholder {
+  color: #94a3b8;
+}
+
+.saas-input:focus {
+  background: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 /* ─── Buttons ─── */
@@ -156,24 +93,24 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   width: 100%;
   padding: 0.85rem 1.25rem;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   font-weight: 700;
   font-size: 0.95rem;
   color: #ffffff;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
-  filter: brightness(1.1);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  filter: brightness(1.05);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -181,40 +118,40 @@ body {
 }
 
 .btn-primary:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Glowing Emerald "I am Safe" Button with Bounce Effect */
+/* Radiant Emerald "I am Safe" Button */
 .btn-safe-glow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
   width: 100%;
-  padding: 1.1rem 1.5rem;
-  border-radius: 1.25rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   letter-spacing: 0.01em;
-  color: #022c16;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(16, 185, 129, 0.45), 0 8px 20px rgba(5, 150, 105, 0.35);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .btn-safe-glow:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 45px rgba(16, 185, 129, 0.65), 0 10px 30px rgba(5, 150, 105, 0.5);
-  filter: brightness(1.08);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
+  filter: brightness(1.05);
 }
 
 .btn-safe-glow:active:not(:disabled) {
-  transform: scale(0.93) translateY(1px);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+  transform: scale(0.95) translateY(1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
 .btn-safe-glow:disabled {
@@ -223,144 +160,45 @@ body {
   transform: none;
 }
 
-/* ─── Emergency Calling Button ─── */
-.btn-emergency-call {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1.1rem;
-  border-radius: 1rem;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #ffffff;
-  background: rgba(244, 63, 94, 0.15);
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-emergency-call:hover {
-  background: rgba(244, 63, 94, 0.28);
-  border-color: rgba(244, 63, 94, 0.7);
-  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
-  transform: translateY(-1px);
-}
-
-.btn-emergency-call:active {
-  transform: scale(0.97);
-}
-
-.btn-emergency-call-urgent {
-  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #be123c 100%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 25px rgba(225, 29, 72, 0.5), 0 4px 15px rgba(0, 0, 0, 0.4);
-  animation: urgent-call-breathe 1.5s ease-in-out infinite;
-}
-
-@keyframes urgent-call-breathe {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(225, 29, 72, 0.45);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 35px rgba(225, 29, 72, 0.8);
-    transform: scale(1.02);
-  }
-}
-
-/* ─── Massive Centered Timer Animations ─── */
-.timer-pulse-active {
-  animation: timer-breathe-dark 2.4s ease-in-out infinite;
-}
-
-@keyframes timer-breathe-dark {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.25));
-  }
-  50% {
-    transform: scale(1.025);
-    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.5));
-  }
-}
-
-.timer-sos-pulse {
-  animation: timer-sos-alert-dark 1.2s ease-in-out infinite;
-}
-
-@keyframes timer-sos-alert-dark {
-  0%, 100% {
-    transform: scale(1);
-    color: #fb7185;
-    filter: drop-shadow(0 0 15px rgba(244, 63, 94, 0.4));
-  }
-  50% {
-    transform: scale(1.06);
-    color: #ffffff;
-    filter: drop-shadow(0 0 35px rgba(244, 63, 94, 0.85));
-  }
-}
-
-/* Beacon Warning Animation */
-.beacon-pulse {
-  animation: beacon-wave 1.6s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-}
-
-@keyframes beacon-wave {
-  0% { transform: scale(0.92); opacity: 0.9; }
-  50% { transform: scale(1.08); opacity: 1; }
-  100% { transform: scale(0.92); opacity: 0.9; }
-}
-
-@keyframes beacon-glow {
-  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.95); }
-  50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
-}
-
-/* ─── Leaflet Map Dark Theme Overrides & Animations ─── */
+/* ─── Leaflet Map Light SaaS Theme ─── */
 .leaflet-container {
   font-family: var(--font-sans) !important;
-  background-color: #0b1120 !important;
+  background-color: #f1f5f9 !important;
   z-index: 10;
 }
 
-.leaflet-tile {
-  filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.75);
-}
-
 .leaflet-popup-content-wrapper {
-  background: rgba(15, 23, 42, 0.95) !important;
-  color: #f8fafc !important;
-  border: 1px solid rgba(71, 85, 105, 0.5) !important;
-  border-radius: 1rem !important;
-  backdrop-filter: blur(12px) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.85rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
 }
 
 .leaflet-popup-tip {
-  background: rgba(15, 23, 42, 0.95) !important;
+  background: #ffffff !important;
 }
 
-/* Glowing GPS Marker */
+/* Glowing GPS Marker (Clean Light SaaS) */
 .gps-pulse-marker {
   position: relative;
-  width: 24px;
-  height: 24px;
-  background: #38bdf8;
+  width: 22px;
+  height: 22px;
+  background: #0284c7;
   border: 3px solid #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 15px #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.45);
 }
 
 .gps-pulse-marker::after {
   content: '';
   position: absolute;
-  top: -8px;
-  left: -8px;
-  right: -8px;
-  bottom: -8px;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.4);
+  background: rgba(2, 132, 199, 0.3);
   animation: gps-wave 2s infinite ease-out;
   pointer-events: none;
 }
@@ -373,39 +211,39 @@ body {
 /* SOS Pin Pulse Marker */
 .sos-pulse-marker {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   background: #e11d48;
   border: 3px solid #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 20px #e11d48;
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.6);
   animation: sos-marker-blink 1.2s infinite ease-in-out;
 }
 
 .sos-pulse-marker::after {
   content: '';
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
   border-radius: 50%;
-  background: rgba(225, 29, 72, 0.5);
+  background: rgba(225, 29, 72, 0.4);
   animation: gps-wave 1.4s infinite ease-out;
   pointer-events: none;
 }
 
 @keyframes sos-marker-blink {
   0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.15); filter: brightness(1.3); }
+  50% { transform: scale(1.15); filter: brightness(1.25); }
 }
 
 /* ─── Spinners ─── */
 .spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -413,10 +251,10 @@ body {
 
 .spinner-dark {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2.5px solid rgba(99, 102, 241, 0.25);
-  border-top-color: #818cf8;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(99, 102, 241, 0.25);
+  border-top-color: #4f46e5;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -443,7 +281,7 @@ body {
 @keyframes enter-smooth {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.99);
+    transform: translateY(8px) scale(0.99);
   }
   to {
     opacity: 1;

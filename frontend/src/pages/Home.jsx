@@ -24,7 +24,6 @@ export default function Home() {
   const [distressAlert, setDistressAlert] = useState(null);
   const [loggedNotes, setLoggedNotes] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
-  const [locationStatus, setLocationStatus] = useState('idle'); // idle, locating, acquired, error
   const intervalRef = useRef(null);
 
   // Countdown timer effect
@@ -48,9 +47,7 @@ export default function Home() {
     e.preventDefault();
     if (!destination.trim() || !duration) return;
     setIsSubmitting(true);
-    setLocationStatus('locating');
 
-    // Attempt to capture browser geolocation
     const getCoordinates = () =>
       new Promise((resolve) => {
         if (!navigator.geolocation) {
@@ -61,14 +58,11 @@ export default function Home() {
           (pos) => {
             const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             setUserLocation(coords);
-            setLocationStatus('acquired');
             resolve(coords);
           },
           () => {
-            // Fallback coordinate on permission denial / timeout
             const fallback = { lat: 28.6139, lng: 77.2090 };
             setUserLocation(fallback);
-            setLocationStatus('error');
             resolve(fallback);
           },
           { timeout: 5000, enableHighAccuracy: true }
@@ -111,11 +105,11 @@ export default function Home() {
     }
   };
 
-  const handleSendNote = async (e) => {
+  const handleSendNote = async (e, textOverride = null) => {
     if (e) e.preventDefault();
-    if (!noteText.trim() || !activeJourney || isAnalyzingNote) return;
+    const currentNote = (textOverride !== null ? textOverride : noteText).trim();
+    if (!currentNote || !activeJourney || isAnalyzingNote) return;
 
-    const currentNote = noteText.trim();
     setIsAnalyzingNote(true);
     setNoteFeedback(null);
 
@@ -134,17 +128,17 @@ export default function Home() {
         setDistressAlert({ score: response.sentiment_score, note: currentNote });
         setNoteFeedback({
           type: 'danger',
-          message: `🚨 Distress detected (Score: ${response.sentiment_score}). SOS Triggered!`,
+          message: `Distress detected (Score: ${response.sentiment_score}). SOS Triggered!`,
         });
       } else {
         setNoteFeedback({
           type: 'success',
-          message: `✓ Note logged (Sentiment: ${response.sentiment_score > 0 ? '+' : ''}${response.sentiment_score.toFixed(2)}) — Normal`,
+          message: `Note logged (Sentiment: ${response.sentiment_score > 0 ? '+' : ''}${response.sentiment_score.toFixed(2)}) — Normal`,
         });
         setNoteText('');
         setTimeout(() => {
           setNoteFeedback((fb) => (fb?.type === 'success' ? null : fb));
-        }, 4500);
+        }, 4000);
       }
     } catch (err) {
       setNoteFeedback({
@@ -154,6 +148,11 @@ export default function Home() {
     } finally {
       setIsAnalyzingNote(false);
     }
+  };
+
+  const handleSimulatePeril = () => {
+    if (!activeJourney) return;
+    handleSendNote(null, 'Emergency! Someone is following me and threatening me.');
   };
 
   const handleReset = () => {
@@ -171,14 +170,21 @@ export default function Home() {
   const isExpired = remaining <= 0 && activeJourney && !markedSafe;
   const isSos = (activeJourney && activeJourney.status === 'sos') || isExpired;
 
-  // Calculate circular gauge progress
+  // Dynamic Risk Score Computation (0-100)
+  // Low Risk: ~21/100, High Risk (SOS / expired): ~88-96/100
   const totalSeconds = activeJourney ? activeJourney.expected_duration_minutes * 60 : 1;
-  const progress = activeJourney ? Math.max(0, Math.min(1, remaining / totalSeconds)) : 1;
-  const radius = 76;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
+  const progressRatio = activeJourney ? Math.max(0, Math.min(1, remaining / totalSeconds)) : 1;
+  const timeElapsedRatio = 1 - progressRatio;
+  
+  let riskScore = isSos ? 92 : Math.min(85, Math.round(15 + timeElapsedRatio * 18 + (loggedNotes.some(n => n.score < 0) ? 14 : 0)));
+  if (!activeJourney) riskScore = 21;
 
-  // Map coordinates
+  // Circular Gauge Calculations
+  const gaugeRadius = 54;
+  const gaugeCircumference = 2 * Math.PI * gaugeRadius;
+  const gaugeOffset = gaugeCircumference * (1 - riskScore / 100);
+
+  // Map Coordinates
   const currentCoords =
     activeJourney?.latitude && activeJourney?.longitude
       ? [activeJourney.latitude, activeJourney.longitude]
@@ -191,7 +197,7 @@ export default function Home() {
       id: activeJourney?.id || 'live-user',
       lat: currentCoords[0],
       lng: currentCoords[1],
-      title: activeJourney?.destination || 'Your Current GPS Location',
+      title: activeJourney?.destination || 'Your Live GPS Coordinates',
       status: isSos ? 'sos' : 'active',
       duration: activeJourney?.expected_duration_minutes,
       time: activeJourney ? 'Active Now' : '',
@@ -199,81 +205,78 @@ export default function Home() {
   ];
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-center transition-all duration-500">
+    <div className="w-full flex-1 flex flex-col justify-start gap-8 animate-enter">
       
-      {/* Background Red Ambient Glow if SOS */}
-      {isSos && <div className="ambient-dark-sos" />}
-
       {!activeJourney ? (
-        /* ═══════════════ STEP 1: START JOURNEY (2-COL DESKTOP) ═══════════════ */
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[75vh] animate-enter">
+        /* ═══════════════ STEP 1: START JOURNEY (PREMIUM SAAS HERO & FORM) ═══════════════ */
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 items-center min-h-[72vh]">
           
-          {/* Left Column: Highlights & Telemetry Info */}
-          <div className="flex flex-col justify-center gap-6 pr-0 lg:pr-4">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-extrabold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 w-fit shadow-lg shadow-indigo-500/10">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />
-              <span>Real-Time GPS Telemetry & NLP AI Guard</span>
+          {/* Left Column: Value Prop & Live Metric Cards (7 cols) */}
+          <div className="lg:col-span-7 flex flex-col justify-center gap-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 w-fit">
+              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+              <span>Real-Time Commute Telemetry Engine</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
-              Solo Commute with <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">Live GPS & AI.</span>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+              Intelligent Risk Monitoring & <span className="text-indigo-600">Personal Safety Guard.</span>
             </h1>
 
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl">
-              SafeJourney pinpoints your live location, counts down your commute, and analyzes your transit notes for subtle distress signals. If time runs out, emergency contacts are alerted instantly.
+            <p className="text-sm sm:text-base font-medium text-slate-500 leading-relaxed max-w-xl">
+              SafeJourney provides continuous GPS telemetry, automated timeout protection, and real-time VADER NLP distress detection for solo commuters and travelers.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/50 shadow-md flex flex-col gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-1 hover:border-slate-300 transition-colors">
                 <span className="text-xl">📍</span>
-                <span className="text-xs font-bold text-slate-200">Live GPS Pin</span>
-                <span className="text-[11px] text-slate-400">Captures coordinates & renders interactive map</span>
+                <span className="text-sm font-extrabold text-slate-800 tracking-tight">GPS Telemetry</span>
+                <span className="text-xs font-medium text-slate-500">Live coordinates captured & pinned to Leaflet maps.</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/50 shadow-md flex flex-col gap-1">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-1 hover:border-slate-300 transition-colors">
                 <span className="text-xl">⏱</span>
-                <span className="text-xs font-bold text-slate-200">Auto SOS</span>
-                <span className="text-[11px] text-slate-400">Triggers alert if safe check-in is missed</span>
+                <span className="text-sm font-extrabold text-slate-800 tracking-tight">Fail-Safe Timer</span>
+                <span className="text-xs font-medium text-slate-500">Auto-escalates to SOS if check-in is missed.</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/50 shadow-md flex flex-col gap-1">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-1 hover:border-slate-300 transition-colors">
                 <span className="text-xl">🧠</span>
-                <span className="text-xs font-bold text-slate-200">NLP AI Guard</span>
-                <span className="text-[11px] text-slate-400">Detects fear & distress in quick notes</span>
+                <span className="text-sm font-extrabold text-slate-800 tracking-tight">NLP Distress AI</span>
+                <span className="text-xs font-medium text-slate-500">Local NLP polarity analysis detects danger signals.</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Start Journey Form */}
-          <div className="w-full flex justify-center lg:justify-end">
-            <div className="glass-card p-8 sm:p-10 w-full max-w-xl shadow-2xl shadow-black/80">
-              <div className="flex items-center gap-4 mb-7 pb-5 border-b border-slate-700/50">
-                <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30">
-                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          {/* Right Column: Start Journey Card (5 cols) */}
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     <polyline points="9 12 11 14 15 10"/>
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-extrabold text-white tracking-tight">Start Safe Journey</h2>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Captures GPS coordinates & arms countdown</p>
+                  <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Initialize Journey</h2>
+                  <p className="text-xs font-medium text-slate-500">Set destination and expected transit buffer</p>
                 </div>
               </div>
 
-              <form onSubmit={handleStart} className="flex flex-col gap-5">
+              <form onSubmit={handleStart} className="flex flex-col gap-4">
                 <div>
-                  <label htmlFor="destination" className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <label htmlFor="destination" className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
                       <circle cx="12" cy="10" r="3"/>
                     </svg>
-                    Destination
+                    Destination Name
                   </label>
                   <input
                     id="destination"
                     type="text"
-                    className="glass-input text-base py-3"
-                    placeholder="e.g., Home from Metro / Office to Flat / Night Walk"
+                    className="saas-input"
+                    placeholder="e.g., Office to Apartment / Metro Station"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
                     required
@@ -282,8 +285,8 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label htmlFor="duration" className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-1.5">
-                    <svg className="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <label htmlFor="duration" className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/>
                       <polyline points="12 6 12 12 16 14"/>
                     </svg>
@@ -294,27 +297,27 @@ export default function Home() {
                     type="number"
                     min="1"
                     max="1440"
-                    className="glass-input text-base py-3"
+                    className="saas-input"
                     placeholder="25"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     required
                   />
 
-                  {/* Quick Presets */}
-                  <div className="grid grid-cols-4 gap-2.5 mt-3">
+                  {/* Preset Buttons */}
+                  <div className="grid grid-cols-4 gap-2 mt-2.5">
                     {['15', '25', '45', '60'].map((mins) => (
                       <button
                         key={mins}
                         type="button"
                         onClick={() => setDuration(mins)}
-                        className={`py-2.5 rounded-xl text-xs font-extrabold border transition-all duration-200 ${
+                        className={`py-1.5 rounded-lg text-xs font-bold border transition-all ${
                           duration === mins
-                            ? 'bg-indigo-600/40 border-indigo-400 text-indigo-200 shadow-md shadow-indigo-600/20'
-                            : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:bg-slate-700/80 hover:text-slate-200'
+                            ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-2xs'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                         }`}
                       >
-                        {mins} min
+                        {mins}m
                       </button>
                     ))}
                   </div>
@@ -322,17 +325,17 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="btn-primary mt-3 py-3.5 text-base"
+                  className="btn-primary mt-2"
                   disabled={isSubmitting || !destination.trim() || !duration}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <span className="spinner" />
-                      <span>Acquiring GPS & Starting...</span>
+                      <span>Acquiring GPS & Initializing...</span>
                     </div>
                   ) : (
                     <>
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                         <polygon points="6 3 20 12 6 21 6 3"/>
                       </svg>
                       <span>Begin Journey Protection</span>
@@ -345,28 +348,28 @@ export default function Home() {
         </div>
       ) : markedSafe ? (
         /* ═══════════════ STEP 2: SAFE CONFIRMATION ═══════════════ */
-        <div className="w-full max-w-xl mx-auto glass-card p-10 text-center flex flex-col items-center animate-enter my-auto">
-          <div className="flex items-center justify-center w-24 h-24 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 mb-5 shadow-2xl shadow-emerald-500/30">
-            <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+        <div className="w-full max-w-lg mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center flex flex-col items-center animate-enter my-8">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4 shadow-sm">
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
 
-          <span className="px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-3">
-            Status: Safely Completed
+          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+            Status: Completed Safely
           </span>
 
-          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">You're Safe! 🎉</h2>
-          <p className="text-base text-slate-300 mt-2 max-w-md">
-            Journey to <strong className="text-white font-bold">{activeJourney.destination}</strong> has been marked as safely completed.
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">You're Safe! 🎉</h2>
+          <p className="text-sm font-medium text-slate-500 mt-1 max-w-sm">
+            Journey to <strong className="text-slate-800 font-bold">{activeJourney.destination}</strong> has been archived and marked safely completed.
           </p>
 
           <button
             onClick={handleReset}
-            className="btn-primary mt-8 max-w-xs py-3.5 text-base"
+            className="btn-primary mt-6 max-w-xs"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14"/>
               <path d="m12 5 7 7-7 7"/>
             </svg>
@@ -374,182 +377,267 @@ export default function Home() {
           </button>
         </div>
       ) : (
-        /* ═══════════════ STEP 3: ACTIVE JOURNEY / SOS STATE (FULL-WIDTH 2-COL + MAP) ═══════════════ */
-        <div className="w-full flex flex-col gap-6 animate-enter">
+        /* ═══════════════ STEP 3: HIGH-FIDELITY ACTIVE TELEMETRY DASHBOARD ═══════════════ */
+        <div className="w-full flex flex-col gap-8 animate-enter">
           
-          {/* Top Priority SOS Banner if in Emergency */}
-          {isSos && (
-            <div className="w-full">
-              <EmergencyHub isSos={true} />
-            </div>
-          )}
-
-          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* ─── SECTION 1: HERO RISK ASSESSMENT & TELEMETRY CARD ─── */}
+          <div className={`bg-white rounded-2xl border ${isSos ? 'border-rose-300 bg-rose-50/40 shadow-md' : 'border-slate-200 shadow-sm'} p-6 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-8 w-full`}>
             
-            {/* Left Column: Timer & "I am Safe" & Emergency Hub (7 cols) */}
-            <div className="lg:col-span-7 flex flex-col gap-6">
-              
-              <div className={`${isSos ? 'glass-card-sos' : 'glass-card'} p-8 sm:p-10 flex flex-col items-center text-center transition-all duration-500 shadow-2xl`}>
-                
-                {/* Status Header */}
-                {isSos ? (
-                  <div className="flex flex-col items-center mb-3">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-3xl bg-rose-600/30 border-2 border-rose-500/70 mb-4 shadow-2xl shadow-rose-600/50 beacon-pulse">
-                      <svg className="w-11 h-11 text-rose-400 fill-rose-500/20" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <line x1="12" y1="9" x2="12" y2="13"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                      </svg>
-                    </div>
+            {/* Left: Massive Header & Risk Pill */}
+            <div className="flex flex-col gap-2.5 max-w-xl text-center lg:text-left">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                <h1 className={`text-3xl sm:text-4xl font-bold tracking-tight ${isSos ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  {isSos ? 'CRITICAL RISK' : 'LOW RISK'}
+                </h1>
 
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse mb-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-ping" />
-                      EMERGENCY ALERT TRIGGERED
-                    </div>
+                <span className={`text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1.5 ${isSos ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-emerald-100 text-emerald-700'}`}>
+                  <span className={`w-2 h-2 rounded-full ${isSos ? 'bg-rose-600' : 'bg-emerald-600'}`} />
+                  <span>{isSos ? 'SOS Emergency Alert' : 'Normal Transit'}</span>
+                </span>
+              </div>
 
-                    <h2 className="text-2xl font-black text-rose-100 mt-1">{activeJourney.destination}</h2>
-                    <p className="text-sm text-rose-300 font-semibold max-w-md mt-1">
-                      {distressAlert
-                        ? `AI Distress Detected in note: "${distressAlert.note}" (Score: ${distressAlert.score})`
-                        : 'Safety countdown timer expired without safe check-in!'}
-                    </p>
+              <div className="text-xl font-extrabold text-slate-800 tracking-tight">
+                {activeJourney.destination}
+              </div>
+
+              <p className="text-sm font-medium text-slate-500 leading-normal">
+                {isSos
+                  ? (distressAlert ? `Distress detected in transit note: "${distressAlert.note}" (Sentiment: ${distressAlert.score})` : 'Countdown timer expired without safe check-in!')
+                  : `Active commute telemetry stream · ${activeJourney.expected_duration_minutes} minutes allocated.`}
+              </p>
+            </div>
+
+            {/* Center / Right: Custom SVG Circular Progress Risk Gauge */}
+            <div className="flex items-center gap-8 shrink-0">
+              <div className="relative flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 130 130">
+                  {/* Light Grey Track */}
+                  <circle
+                    cx="65"
+                    cy="65"
+                    r={gaugeRadius}
+                    className="fill-none stroke-slate-100"
+                    strokeWidth="9"
+                  />
+                  {/* Dynamic Colored Fill Ring */}
+                  <circle
+                    cx="65"
+                    cy="65"
+                    r={gaugeRadius}
+                    className="fill-none transition-all duration-700 ease-out"
+                    strokeWidth="9"
+                    strokeLinecap="round"
+                    style={{
+                      strokeDasharray: gaugeCircumference,
+                      strokeDashoffset: gaugeOffset,
+                      stroke: isSos ? '#f43f5e' : riskScore > 50 ? '#f59e0b' : '#10b981',
+                    }}
+                  />
+                </svg>
+
+                {/* Centered Risk Score Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 font-mono tracking-tight">
+                    {riskScore} <span className="text-sm font-bold text-slate-400">/ 100</span>
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center mb-3">
-                    <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs mb-3">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Live Safety Guard Active
-                    </div>
-                    <h2 className="text-3xl font-black text-white tracking-tight">{activeJourney.destination}</h2>
-                    <p className="text-sm text-slate-400 mt-1">Expected duration: {activeJourney.expected_duration_minutes} minutes</p>
-                  </div>
-                )}
-
-                {/* ─── MASSIVE CENTERED TIMER ─── */}
-                <div className="relative my-4 flex items-center justify-center">
-                  <div className={`relative flex items-center justify-center w-60 h-60 sm:w-72 sm:h-72 ${isSos ? 'timer-sos-pulse' : 'timer-pulse-active'}`}>
-                    <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 190 190">
-                      <circle
-                        cx="95"
-                        cy="95"
-                        r={radius}
-                        className="fill-none stroke-slate-800"
-                        strokeWidth="11"
-                      />
-                      <circle
-                        cx="95"
-                        cy="95"
-                        r={radius}
-                        className="fill-none transition-all duration-1000 ease-linear"
-                        strokeWidth="11"
-                        strokeLinecap="round"
-                        style={{
-                          strokeDasharray: circumference,
-                          strokeDashoffset: strokeDashoffset,
-                          stroke: isSos ? '#f43f5e' : '#10b981',
-                          filter: isSos ? 'drop-shadow(0 0 12px rgba(244,63,94,0.8))' : 'drop-shadow(0 0 12px rgba(16,185,129,0.7))',
-                        }}
-                      />
-                    </svg>
-
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        {isSos ? 'STATUS' : 'TIME REMAINING'}
-                      </span>
-                      <div className={`font-mono font-black tracking-tight ${isSos ? 'text-4xl text-rose-400' : 'text-6xl text-white'}`}>
-                        {isSos ? (isExpired ? 'TIME UP' : 'SOS') : formatTime(remaining)}
-                      </div>
-                      <span className="text-xs font-semibold text-slate-400 mt-1.5">
-                        {Math.ceil(remaining / 60)} min left
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ─── "I AM SAFE" GLOWING GREEN BUTTON ─── */}
-                <div className="w-full max-w-md mt-2 flex flex-col gap-3">
-                  <button
-                    onClick={handleSafe}
-                    disabled={isSubmitting}
-                    className="btn-safe-glow py-4 text-lg"
-                  >
-                    {isSubmitting ? (
-                      <span className="spinner" />
-                    ) : (
-                      <>
-                        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                          <polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
-                        <span>I am Safe & Arrived</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={handleReset}
-                    className="text-xs font-bold text-slate-400 hover:text-white py-2 transition-colors"
-                  >
-                    Cancel & End Journey
-                  </button>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 -mt-0.5">
+                    Risk Score
+                  </span>
                 </div>
               </div>
 
-              {/* Emergency Quick-Dial Hub (Normal State) */}
-              {!isSos && <EmergencyHub isSos={false} />}
+              {/* Countdown Time Remaining Block */}
+              <div className="flex flex-col items-start justify-center border-l border-slate-100 pl-6 hidden sm:flex">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Time Remaining</span>
+                <span className={`font-mono text-3xl sm:text-4xl font-extrabold tracking-tight ${isSos ? 'text-rose-600' : 'text-slate-900'}`}>
+                  {isSos ? (isExpired ? '00:00' : 'SOS') : formatTime(remaining)}
+                </span>
+                <span className="text-xs font-medium text-slate-500 mt-0.5">
+                  {Math.ceil(remaining / 60)} min buffer left
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── SECTION 2: CUSTOM PROGRESS BARS GRID (FACTOR BREAKDOWN) ─── */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Telemetry Factor Breakdown</h3>
+                <p className="text-xs font-medium text-slate-500">Real-time risk variables and safety weights</p>
+              </div>
+              <span className="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full border border-slate-200">
+                Live Sensor Feed
+              </span>
             </div>
 
-            {/* Right Column: Live Map Telemetry & NLP Quick Note (5 cols) */}
-            <div className="lg:col-span-5 flex flex-col gap-6">
-              
-              {/* ─── LIVE GPS MAP WIDGET ─── */}
-              <div className="glass-card p-5 flex flex-col gap-3 shadow-2xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🗺️</span>
-                    <h3 className="text-sm font-extrabold text-white">Live GPS Map Telemetry</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Factor 1: Route & Transit Progress */}
+              <div className="flex flex-col">
+                <div className="flex justify-between items-end">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800">Transit Elapsed</span>
+                    <span className="text-[11px] font-medium text-slate-400">(35%)</span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                    OpenStreetMap
+                  <span className="text-xs font-bold text-slate-700 font-mono">
+                    {Math.round(timeElapsedRatio * 35)} / 35 pts
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                    style={{ width: `${Math.round(timeElapsedRatio * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Factor 2: NLP AI Sentiment Polarity */}
+              <div className="flex flex-col">
+                <div className="flex justify-between items-end">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800">NLP Polarity</span>
+                    <span className="text-[11px] font-medium text-slate-400">(30%)</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-700 font-mono">
+                    {isSos ? '28' : '4'} / 30 pts
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${isSos ? 'bg-rose-500' : 'bg-blue-500'}`}
+                    style={{ width: isSos ? '93%' : '14%' }}
+                  />
+                </div>
+              </div>
+
+              {/* Factor 3: GPS Telemetry Fix */}
+              <div className="flex flex-col">
+                <div className="flex justify-between items-end">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800">GPS Signal Fix</span>
+                    <span className="text-[11px] font-medium text-slate-400">(20%)</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-700 font-mono">
+                    18 / 20 pts
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                    style={{ width: '90%' }}
+                  />
+                </div>
+              </div>
+
+              {/* Factor 4: Check-in Reliability */}
+              <div className="flex flex-col">
+                <div className="flex justify-between items-end">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800">Check-in Buffer</span>
+                    <span className="text-[11px] font-medium text-slate-400">(15%)</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-700 font-mono">
+                    {isSos ? '15' : '3'} / 15 pts
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${isSos ? 'bg-rose-500' : 'bg-teal-500'}`}
+                    style={{ width: isSos ? '100%' : '20%' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── SECTION 3: 2-COLUMN MAP & NLP NOTE LOGS ─── */}
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left: Polished Live Map & Emergency Actions (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col gap-6">
+              
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Live GPS Telemetry Map</h3>
+                    <p className="text-xs font-medium text-slate-500">Real-time coordinates and geolocation fix</p>
+                  </div>
+                  <span className="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    <span>GPS Connected</span>
                   </span>
                 </div>
 
-                {/* Leaflet Map Widget with fixed responsive height */}
+                {/* Leaflet Map Widget with Action Bar */}
                 <LiveMap
                   center={currentCoords}
                   zoom={15}
                   markers={mapMarkers}
                   activeMarkerId={activeJourney?.id || 'live-user'}
                   className="h-64 sm:h-80 w-full"
+                  onSimulatePeril={handleSimulatePeril}
                 />
+              </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                  <span>Pin: {currentCoords[0].toFixed(4)}° N, {currentCoords[1].toFixed(4)}° E</span>
-                  <span className="text-emerald-400 font-bold">● Active Beacon</span>
+              {/* Glowing Emerald "I am Safe" Button */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-sm font-extrabold text-slate-900 tracking-tight">Arrived at your destination?</h4>
+                  <p className="text-xs font-medium text-slate-500">Confirm safety to disarm countdown timer and complete telemetry record.</p>
+                </div>
+
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={handleSafe}
+                    disabled={isSubmitting}
+                    className="btn-safe-glow whitespace-nowrap px-6 py-3"
+                  >
+                    {isSubmitting ? (
+                      <span className="spinner" />
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>I am Safe</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleReset}
+                    className="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-2"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
 
+              {/* Emergency Contacts Hub */}
+              <EmergencyHub isSos={isSos} />
+            </div>
+
+            {/* Right: Quick Note Input & NLP Timeline History (5 cols) */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              
               {/* Quick Note Card */}
-              <div className="glass-card p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
                 <div className="flex items-center justify-between mb-3.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">📝</span>
-                    <h3 className="text-sm font-extrabold text-white">Quick Note / Check-in</h3>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">Quick Note / Check-in</h3>
+                    <p className="text-xs font-medium text-slate-500">NLP scans for distress cues in real time</p>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                    NLP AI Guard
+                  <span className="bg-purple-50 text-purple-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-purple-200">
+                    VADER AI
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                  Log transit notes. The AI automatically scans for distress or danger signals.
-                </p>
-
-                <div className="flex gap-2.5">
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    className="glass-input py-2.5 text-xs flex-1"
-                    placeholder="e.g., Boarded bus #12 / Walking towards station"
+                    className="saas-input py-2.5 text-xs flex-1"
+                    placeholder="e.g., Boarded bus #12 / Walking through main market"
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     disabled={isAnalyzingNote || isSubmitting}
@@ -572,18 +660,18 @@ export default function Home() {
 
                 {/* Status Toast */}
                 {isAnalyzingNote && (
-                  <div className="mt-3 px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 flex items-center gap-2 animate-enter">
+                  <div className="mt-3 px-3 py-2 rounded-xl text-xs font-medium bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-2 animate-enter">
                     <span className="spinner-dark" style={{ width: 14, height: 14, borderWidth: 2 }} />
-                    <span>Evaluating sentiment & intent...</span>
+                    <span>Evaluating sentiment & threat polarity...</span>
                   </div>
                 )}
 
                 {noteFeedback && !isAnalyzingNote && (
                   <div
-                    className={`mt-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 animate-enter ${
+                    className={`mt-3 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 animate-enter ${
                       noteFeedback.type === 'danger'
-                        ? 'bg-rose-500/20 border border-rose-500/40 text-rose-200'
-                        : 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-200'
+                        ? 'bg-rose-50 border border-rose-200 text-rose-700'
+                        : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
                     }`}
                   >
                     <span>{noteFeedback.type === 'danger' ? '🚨' : '✓'}</span>
@@ -592,26 +680,26 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Recent Notes Log */}
+              {/* Note History Log */}
               {loggedNotes.length > 0 && (
-                <div className="glass-card p-6">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">
-                    Journey Note History ({loggedNotes.length})
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3.5">
+                    Transit Note History ({loggedNotes.length})
                   </h4>
-                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                  <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
                     {loggedNotes.map((n, idx) => (
                       <div
                         key={idx}
                         className={`p-3 rounded-xl text-xs flex items-center justify-between border ${
                           n.isDistress
-                            ? 'bg-rose-950/50 border-rose-500/50 text-rose-200 font-bold'
-                            : 'bg-slate-900/60 border-slate-800 text-slate-200'
+                            ? 'bg-rose-50 border-rose-200 text-rose-900 font-bold'
+                            : 'bg-slate-50 border-slate-200 text-slate-800'
                         }`}
                       >
                         <span className="truncate max-w-[180px] sm:max-w-xs">{n.text}</span>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-slate-400">{n.time}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${n.isDistress ? 'bg-rose-500/30 text-rose-300' : 'bg-slate-800 text-slate-300'}`}>
+                          <span className="text-[10px] text-slate-400 font-medium">{n.time}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${n.isDistress ? 'bg-rose-200 text-rose-800' : 'bg-slate-200 text-slate-700'}`}>
                             {n.score > 0 ? `+${n.score.toFixed(2)}` : n.score.toFixed(2)}
                           </span>
                         </div>
@@ -620,6 +708,14 @@ export default function Home() {
                   </div>
                 </div>
               )}
+
+              {/* Quick Safety Protocol Card */}
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-xs text-slate-600 flex flex-col gap-2">
+                <span className="font-extrabold text-slate-800 flex items-center gap-2">
+                  <span>🛡️</span> Telemetry Safety Protocol
+                </span>
+                <p className="leading-relaxed">Keep your phone unlocked in your hand or active pocket. In case of distress, click "Simulate Peril" to test or tap any emergency number directly.</p>
+              </div>
             </div>
           </div>
         </div>

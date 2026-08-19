@@ -33,8 +33,6 @@ export default function Dashboard() {
   const activeJourneys = filteredJourneys.filter((j) => j.status === 'active');
   const safeJourneys = filteredJourneys.filter((j) => j.status === 'safe');
 
-  // Prepare map markers from journeys that have coordinates
-  // (Assign sample offsets around default center if journey has no explicit lat/lng so they still display beautifully on map)
   const defaultCenter = [28.6139, 77.2090];
   const mapMarkers = filteredJourneys.map((j, idx) => {
     const lat = j.latitude || defaultCenter[0] + (idx % 2 === 0 ? 0.008 : -0.006) * (idx + 1);
@@ -60,18 +58,18 @@ export default function Dashboard() {
   return (
     <div className="w-full flex-1 flex flex-col gap-8 animate-enter">
       
-      {/* Top Header & Search/Refresh Bar */}
+      {/* ─── Top Header & Search/Refresh Bar ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 mb-1.5 shadow-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Real-Time Fleet & GPS Telemetry Stream</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-1.5 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Telemetry Fleet Stream Active</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-            Safety Monitoring Dashboard
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Safety Monitoring Console
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Live overview of active transit routes, GPS coordinates, check-ins, and emergency SOS alerts.
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            Aggregated dashboard of all active commutes, risk variables, and emergency SOS alerts.
           </p>
         </div>
 
@@ -82,7 +80,7 @@ export default function Dashboard() {
               placeholder="Search destination..."
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
-              className="glass-input py-2.5 pl-10 pr-4 text-xs sm:text-sm w-full"
+              className="saas-input py-2.5 pl-10 pr-4 text-xs sm:text-sm w-full"
             />
             <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/>
@@ -92,81 +90,81 @@ export default function Dashboard() {
 
           <button
             onClick={fetchJourneys}
-            className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white active:scale-95 shadow-md transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm font-bold shrink-0"
+            className="bg-white border border-slate-300 hover:bg-slate-50 text-xs sm:text-sm font-semibold rounded-lg px-4 py-2.5 text-slate-700 shadow-xs active:scale-95 transition-all flex items-center gap-2 shrink-0"
             title="Refresh Now"
           >
-            <svg className={`w-4 h-4 text-indigo-400 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg className={`w-4 h-4 text-indigo-600 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
               <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
               <path d="M16 21h5v-5"/>
             </svg>
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">Refresh Data</span>
           </button>
         </div>
       </div>
 
-      {/* ─── FULL-WIDTH TOP STATS ROW ─── */}
+      {/* ─── FULL-WIDTH TOP STATS ROW (GRID-COLS-1 MD:GRID-COLS-3 GAP-6 W-FULL) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {/* SOS Card */}
-        <div className="glass-card p-6 border-l-4 border-l-rose-500 flex items-center justify-between shadow-2xl">
+        <div className="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-rose-500 shadow-sm p-6 sm:p-7 flex items-center justify-between">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-rose-400">🚨 SOS Alerts</span>
-            <div className="text-4xl font-black text-white mt-1">{sosJourneys.length}</div>
-            <span className="text-xs text-rose-300 font-medium">Require immediate response</span>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-rose-600">🚨 SOS Alerts</span>
+            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mt-1">{sosJourneys.length}</div>
+            <span className="text-xs font-medium text-slate-500">Require immediate response</span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl font-bold border border-rose-500/30">
+          <div className="w-13 h-13 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl font-bold border border-rose-200">
             ⚠
           </div>
         </div>
 
         {/* Active Card */}
-        <div className="glass-card p-6 border-l-4 border-l-emerald-500 flex items-center justify-between shadow-2xl">
+        <div className="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm p-6 sm:p-7 flex items-center justify-between">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">● In Transit (Active)</span>
-            <div className="text-4xl font-black text-white mt-1">{activeJourneys.length}</div>
-            <span className="text-xs text-slate-400">GPS timers counting down</span>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600">● In Transit (Active)</span>
+            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mt-1">{activeJourneys.length}</div>
+            <span className="text-xs font-medium text-slate-500">GPS timers counting down</span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/30">
+          <div className="w-13 h-13 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold border border-emerald-200">
             ⏱
           </div>
         </div>
 
         {/* Safe Card */}
-        <div className="glass-card p-6 border-l-4 border-l-indigo-500 flex items-center justify-between shadow-2xl">
+        <div className="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-indigo-500 shadow-sm p-6 sm:p-7 flex items-center justify-between">
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-400">✓ Completed Safely</span>
-            <div className="text-4xl font-black text-white mt-1">{safeJourneys.length}</div>
-            <span className="text-xs text-slate-400">Safe arrival confirmed</span>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600">✓ Completed Safely</span>
+            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mt-1">{safeJourneys.length}</div>
+            <span className="text-xs font-medium text-slate-500">Safe arrival confirmed</span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl font-bold border border-indigo-500/30">
+          <div className="w-13 h-13 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold border border-indigo-200">
             🛡
           </div>
         </div>
       </div>
 
-      {/* ─── INTERACTIVE COMMUNITY / FLEET LIVE MAP WIDGET ─── */}
-      <div className="glass-card p-6 flex flex-col gap-4 shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* ─── INTERACTIVE COMMUNITY LIVE MAP WIDGET ─── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🗺️</span>
+            <span className="text-xl">🗺️</span>
             <div>
-              <h3 className="text-base font-extrabold text-white">Live Community Telemetry Map</h3>
-              <p className="text-xs text-slate-400">
-                Click any journey card below to focus and inspect its live GPS location on the map.
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Community Telemetry Map</h3>
+              <p className="text-xs font-medium text-slate-500">
+                Click any transit record below to pan and inspect its live GPS location.
               </p>
             </div>
           </div>
           {selectedJourney && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-indigo-300 font-bold bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/40">
+              <span className="text-xs text-indigo-700 font-bold bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
                 Focused: {selectedJourney.destination}
               </span>
               <button
                 onClick={() => setSelectedJourney(null)}
-                className="text-[11px] text-slate-400 hover:text-white underline"
+                className="text-xs text-slate-500 hover:text-slate-900 underline"
               >
-                Reset
+                Reset Map
               </button>
             </div>
           )}
@@ -178,6 +176,7 @@ export default function Dashboard() {
           markers={mapMarkers}
           activeMarkerId={selectedJourney?.id}
           className="h-64 sm:h-80 w-full"
+          onRecenter={() => setSelectedJourney(null)}
         />
       </div>
 
@@ -185,42 +184,42 @@ export default function Dashboard() {
       <EmergencyHub isSos={sosJourneys.length > 0} />
 
       {loading && journeys.length === 0 && (
-        <div className="glass-card p-16 text-center flex flex-col items-center justify-center w-full">
-          <span className="spinner-dark" style={{ width: 32, height: 32, borderWidth: 3 }} />
-          <p className="text-sm text-slate-400 mt-4 font-semibold">Loading real-time monitoring records...</p>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-16 text-center flex flex-col items-center justify-center w-full">
+          <span className="spinner-dark" style={{ width: 28, height: 28, borderWidth: 3 }} />
+          <p className="text-sm font-semibold text-slate-500 mt-4">Loading real-time monitoring records...</p>
         </div>
       )}
 
       {/* ─── FULL-WIDTH EMPTY STATE CARD ─── */}
       {!loading && journeys.length === 0 && (
-        <div className="glass-card p-16 text-center flex flex-col items-center justify-center w-full shadow-2xl">
-          <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center mb-4 text-slate-400 border border-slate-700">
-            <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-16 text-center flex flex-col items-center justify-center w-full">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <h3 className="text-lg font-bold text-white">No journeys recorded yet</h3>
-          <p className="text-sm text-slate-400 mt-1.5 max-w-md">
-            When users start a journey, it will automatically stream here with live GPS coordinates, status updates, and emergency telemetry.
+          <h3 className="text-base font-extrabold text-slate-900 tracking-tight">No journeys recorded yet</h3>
+          <p className="text-xs font-medium text-slate-500 mt-1 max-w-md">
+            When users start a commute, it will stream here with real-time GPS telemetry and incident risk assessment.
           </p>
         </div>
       )}
 
-      {/* ─── FULL-WIDTH 3-COLUMN RESPONSIVE SECTION ─── */}
+      {/* ─── FULL-WIDTH 3-COLUMN RESPONSIVE INCIDENT SECTION ─── */}
       {journeys.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
           
           {/* Column 1: SOS INCIDENTS */}
           <div className="flex flex-col gap-4 w-full">
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-black uppercase tracking-wider text-rose-400 flex items-center gap-2">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-rose-600 flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                 SOS Emergency Incidents ({sosJourneys.length})
               </h2>
             </div>
 
             {sosJourneys.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500 w-full shadow-xs">
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center text-xs font-medium text-slate-400 w-full shadow-2xs">
                 No active SOS alerts. All clear.
               </div>
             ) : (
@@ -228,24 +227,24 @@ export default function Dashboard() {
                 <div
                   key={j.id}
                   onClick={() => setSelectedJourney(j)}
-                  className={`glass-card-sos p-5 flex flex-col gap-2.5 w-full shadow-2xl cursor-pointer hover:scale-[1.01] transition-transform ${
-                    selectedJourney?.id === j.id ? 'ring-2 ring-rose-400' : ''
+                  className={`bg-rose-50/80 rounded-2xl border-2 border-rose-300 shadow-sm p-5 flex flex-col gap-2.5 w-full cursor-pointer hover:border-rose-400 hover:shadow-md transition-all ${
+                    selectedJourney?.id === j.id ? 'ring-2 ring-rose-500' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white shadow-2xs">
                       🚨 SOS ALERT
                     </span>
-                    <span className="text-xs text-rose-300 font-bold">{timeAgo(j.start_time)}</span>
+                    <span className="text-xs font-bold text-rose-700">{timeAgo(j.start_time)}</span>
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold text-white">{j.destination}</h3>
-                    <p className="text-xs text-rose-300 font-medium mt-0.5">
-                      Expected Duration: {j.expected_duration_minutes} min
+                    <h3 className="text-base font-extrabold text-slate-900">{j.destination}</h3>
+                    <p className="text-xs font-medium text-rose-700 mt-0.5">
+                      Target Duration: {j.expected_duration_minutes} min · Click to pan map
                     </p>
                   </div>
-                  <div className="pt-2.5 border-t border-rose-900/60 flex items-center justify-between text-xs font-bold text-rose-300">
-                    <span>⚠ Click to view GPS pin on map</span>
+                  <div className="pt-2 border-t border-rose-200 flex items-center justify-between text-xs font-bold text-rose-800">
+                    <span>⚠ Needs immediate contact</span>
                     <span>ID #{j.id}</span>
                   </div>
                 </div>
@@ -256,14 +255,14 @@ export default function Dashboard() {
           {/* Column 2: ACTIVE JOURNEYS */}
           <div className="flex flex-col gap-4 w-full">
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-emerald-700 flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 In Transit / Active ({activeJourneys.length})
               </h2>
             </div>
 
             {activeJourneys.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500 w-full shadow-xs">
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center text-xs font-medium text-slate-400 w-full shadow-2xs">
                 No active journeys in transit right now.
               </div>
             ) : (
@@ -271,21 +270,21 @@ export default function Dashboard() {
                 <div
                   key={j.id}
                   onClick={() => setSelectedJourney(j)}
-                  className={`glass-card p-5 flex flex-col gap-2 w-full shadow-2xl cursor-pointer hover:border-emerald-500/50 hover:scale-[1.01] transition-all ${
-                    selectedJourney?.id === j.id ? 'ring-2 ring-emerald-400' : ''
+                  className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-2 w-full cursor-pointer hover:border-slate-300 hover:shadow-md transition-all ${
+                    selectedJourney?.id === j.id ? 'ring-2 ring-indigo-500' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                       ● Active
                     </span>
-                    <span className="text-xs text-slate-400 font-medium">{timeAgo(j.start_time)}</span>
+                    <span className="text-xs font-medium text-slate-400">{timeAgo(j.start_time)}</span>
                   </div>
-                  <h3 className="text-base font-bold text-white">{j.destination}</h3>
-                  <div className="flex items-center justify-between text-xs text-slate-400 mt-1">
+                  <h3 className="text-base font-extrabold text-slate-900">{j.destination}</h3>
+                  <div className="flex items-center justify-between text-xs font-medium text-slate-500 mt-1">
                     <span>Target: {j.expected_duration_minutes}m</span>
                     {j.remaining_seconds != null && (
-                      <span className="text-emerald-300 font-bold bg-emerald-500/15 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                         {Math.ceil(j.remaining_seconds / 60)} min left
                       </span>
                     )}
@@ -298,8 +297,8 @@ export default function Dashboard() {
           {/* Column 3: COMPLETED SAFELY */}
           <div className="flex flex-col gap-4 w-full">
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <svg className="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+                <svg className="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 Completed Safely ({safeJourneys.length})
@@ -307,7 +306,7 @@ export default function Dashboard() {
             </div>
 
             {safeJourneys.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500 w-full shadow-xs">
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 text-center text-xs font-medium text-slate-400 w-full shadow-2xs">
                 No completed journeys yet.
               </div>
             ) : (
@@ -315,18 +314,18 @@ export default function Dashboard() {
                 <div
                   key={j.id}
                   onClick={() => setSelectedJourney(j)}
-                  className={`glass-card p-4 flex flex-col gap-1.5 opacity-80 hover:opacity-100 w-full shadow-md cursor-pointer hover:scale-[1.01] transition-all ${
+                  className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-1.5 opacity-90 hover:opacity-100 w-full cursor-pointer hover:border-slate-300 transition-all ${
                     selectedJourney?.id === j.id ? 'ring-2 ring-indigo-400' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
                       ✓ Safe
                     </span>
-                    <span className="text-xs text-slate-500">{timeAgo(j.start_time)}</span>
+                    <span className="text-xs font-medium text-slate-400">{timeAgo(j.start_time)}</span>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-200">{j.destination}</h3>
-                  <div className="text-xs text-slate-500">
+                  <h3 className="text-sm font-bold text-slate-800">{j.destination}</h3>
+                  <div className="text-xs font-medium text-slate-500">
                     Duration: {j.expected_duration_minutes} min
                   </div>
                 </div>
