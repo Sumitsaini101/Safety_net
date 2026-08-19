@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import L from 'leaflet';
 
-export default function LiveMap({
+function LiveMapComponent({
   center = [28.6139, 77.2090],
   zoom = 14,
   markers = [],
@@ -52,8 +52,8 @@ export default function LiveMap({
         const isCurrentActive = m.id === activeMarkerId;
 
         const iconHtml = isSos
-          ? `<div class="sos-pulse-marker" title="SOS Incident"></div>`
-          : `<div class="gps-pulse-marker" title="${m.title || 'Live GPS Location'}"></div>`;
+          ? `<div class="sos-pulse-marker" role="img" aria-label="SOS Incident Location" title="SOS Incident"></div>`
+          : `<div class="gps-pulse-marker" role="img" aria-label="Live GPS Location" title="${m.title || 'Live GPS Location'}"></div>`;
 
         const customIcon = L.divIcon({
           className: 'custom-leaflet-marker',
@@ -113,6 +113,7 @@ export default function LiveMap({
             <button
               type="button"
               onClick={handleRecenterClick}
+              aria-label="Acquire live GPS fix and center map"
               className="bg-white border border-slate-300 hover:bg-slate-50 text-xs sm:text-sm font-semibold rounded-lg px-3.5 py-2 text-slate-700 shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
             >
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping" />
@@ -123,6 +124,7 @@ export default function LiveMap({
               <button
                 type="button"
                 onClick={handleRecenterClick}
+                aria-label="Recenter map view"
                 className="bg-white border border-slate-300 hover:bg-slate-50 text-xs sm:text-sm font-semibold rounded-lg px-3.5 py-2 text-slate-700 shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
               >
                 <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -138,6 +140,7 @@ export default function LiveMap({
             <button
               type="button"
               onClick={onSimulatePeril}
+              aria-label="Simulate peril to test AI distress trigger"
               className="bg-rose-50 border border-rose-200 hover:bg-rose-100 text-xs sm:text-sm font-semibold rounded-lg px-3.5 py-2 text-rose-700 shadow-xs active:scale-95 transition-all flex items-center gap-1.5"
               title="Test distress AI escalation"
             >
@@ -148,10 +151,19 @@ export default function LiveMap({
         </div>
       )}
 
-      {/* Crisp Map Container */}
-      <div className="relative w-full rounded-xl border border-slate-200 shadow-inner overflow-hidden bg-slate-100">
+      {/* Crisp Map Container with Accessibility attributes */}
+      <div
+        role="region"
+        aria-label="Interactive Live Safety Map"
+        tabIndex={0}
+        className="relative w-full rounded-xl border border-slate-200 shadow-inner overflow-hidden bg-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
+      >
         <div ref={mapContainerRef} className={`${className} w-full`} />
       </div>
     </div>
   );
 }
+
+// React.memo optimization to avoid re-rendering map when external countdown timer ticks
+const LiveMap = memo(LiveMapComponent);
+export default LiveMap;

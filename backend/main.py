@@ -5,11 +5,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # pyrefly: ignore [missing-import]
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 # pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 # pyrefly: ignore [missing-import]
+from fastapi.middleware.gzip import GZipMiddleware
+# pyrefly: ignore [missing-import]
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -30,18 +33,33 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="SafeJourney API",
-    description="Personal Safety Check-in System for solo commuters and late-night workers",
+    description="Personal Safety Check-in System with Live Telemetry & AI Distress Detection",
     version="1.0.0",
     lifespan=lifespan,
 )
 
+# ─── Compression Middleware (GZip) ───
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# ─── CORS Middleware ───
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+# ─── Security Headers Middleware ───
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 
 def _compute_journey_fields(row: dict) -> JourneyResponse:
@@ -173,9 +191,6 @@ def get_journeys():
 
     return [_compute_journey_fields(dict(row)) for row in rows]
 
-
-# pyrefly: ignore [missing-import]
-from fastapi.responses import FileResponse
 
 # Mount React Frontend static build directory with SPA fallback for direct subroute access
 frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")

@@ -6,7 +6,8 @@ export default function EmergencyHub({ isSos = false }) {
       tel: 'tel:112',
       badge: 'All Services Dispatch',
       icon: '🚨',
-      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-900' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
+      ariaLabel: 'Call National Emergency at 112',
+      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-950' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
     },
     {
       name: 'Police Assistance',
@@ -14,7 +15,8 @@ export default function EmergencyHub({ isSos = false }) {
       tel: 'tel:100',
       badge: 'Immediate Response',
       icon: '👮',
-      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-900' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
+      ariaLabel: 'Call Police Assistance at 100',
+      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-950' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
     },
     {
       name: "Women's Helpline",
@@ -22,7 +24,8 @@ export default function EmergencyHub({ isSos = false }) {
       tel: 'tel:1091',
       badge: '24/7 Safety Desk',
       icon: '🛡️',
-      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-900' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
+      ariaLabel: "Call Women's Helpline at 1091",
+      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-950' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
     },
     {
       name: 'Ambulance & Medical',
@@ -30,12 +33,16 @@ export default function EmergencyHub({ isSos = false }) {
       tel: 'tel:102',
       badge: 'Medical Emergency',
       icon: '🚑',
-      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-900' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
+      ariaLabel: 'Call Ambulance & Medical Emergency at 102',
+      border: isSos ? 'border-rose-300 bg-rose-50/80 text-rose-950' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-900',
     },
   ];
 
   return (
     <div
+      role={isSos ? 'alert' : 'region'}
+      aria-live={isSos ? 'assertive' : 'polite'}
+      aria-label={isSos ? 'Emergency Assistance Hub Alert' : 'Emergency Assistance Quick-Dial Hub'}
       className={`rounded-2xl p-6 sm:p-7 transition-all duration-300 ${
         isSos
           ? 'saas-card-sos bg-rose-50 border-2 border-rose-400 shadow-md'
@@ -44,7 +51,7 @@ export default function EmergencyHub({ isSos = false }) {
     >
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <span className="text-xl">{isSos ? '🚨' : '📞'}</span>
+          <span className="text-xl" aria-hidden="true">{isSos ? '🚨' : '📞'}</span>
           <div>
             <h3 className={`text-base font-extrabold tracking-tight ${isSos ? 'text-rose-950' : 'text-slate-900'}`}>
               {isSos ? 'Emergency Assistance Hub — Immediate Dispatch' : 'Emergency Quick-Dial Hub'}
@@ -70,10 +77,11 @@ export default function EmergencyHub({ isSos = false }) {
           <a
             key={c.number}
             href={c.tel}
-            className={`p-3.5 rounded-xl border flex items-center justify-between transition-all duration-150 active:scale-95 text-decoration-none shadow-2xs hover:shadow-xs ${c.border}`}
+            aria-label={c.ariaLabel}
+            className={`p-3.5 rounded-xl border flex items-center justify-between transition-all duration-150 active:scale-95 text-decoration-none shadow-2xs hover:shadow-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden ${c.border}`}
           >
             <div className="flex items-center gap-2.5">
-              <span className="text-xl">{c.icon}</span>
+              <span className="text-xl" aria-hidden="true">{c.icon}</span>
               <div>
                 <span className="block text-xs font-bold leading-tight">{c.name}</span>
                 <span className="text-[10px] text-slate-500 font-medium">{c.badge}</span>
