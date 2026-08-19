@@ -46,7 +46,14 @@ app.add_middleware(
 
 def _compute_journey_fields(row: dict) -> JourneyResponse:
     """Compute derived fields (is_expired, remaining_seconds) for a journey row."""
-    start_time = datetime.fromisoformat(row["start_time"])
+    start_time_str = str(row["start_time"]).replace("Z", "+00:00")
+    try:
+        start_time = datetime.fromisoformat(start_time_str)
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+    except Exception:
+        start_time = datetime.now(timezone.utc)
+
     now = datetime.now(timezone.utc)
     elapsed_seconds = (now - start_time).total_seconds()
     total_seconds = row["expected_duration_minutes"] * 60
@@ -165,15 +172,33 @@ def get_journeys():
     return [_compute_journey_fields(dict(row)) for row in rows]
 
 
-# Mount React Frontend static build directory at root URL (/)
+# pyrefly: ignore [missing-import]
+from fastapi.responses import FileResponse
+
+# Mount React Frontend static build directory with SPA fallback for direct subroute access
 frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
 if not os.path.exists(frontend_dist):
     frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
 if not os.path.exists(frontend_dist):
     frontend_dist = "frontend/dist"
 
-if os.path.exists(frontend_dist):
-    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
+assets_dir = os.path.join(frontend_dist, "assets")
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    """Serve static files or fallback to index.html for client-side routing."""
+    file_path = os.path.join(frontend_dist, full_path)
+    if full_path and os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    index_file = os.path.join(frontend_dist, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+
+    return {"message": "SafeJourney API is running. Build frontend to view web UI."}
 
 
 if __name__ == "__main__":
