@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_BASE || 'http://localhost:8000');
 
 export function useJourneys() {
   const [journeys, setJourneys] = useState([]);

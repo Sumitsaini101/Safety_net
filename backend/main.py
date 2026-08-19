@@ -1,7 +1,15 @@
+import os
+import sys
+
+# Ensure backend directory is in sys.path when running from project root
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI, HTTPException
 # pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
+# pyrefly: ignore [missing-import]
+from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -155,6 +163,17 @@ def get_journeys():
     conn.close()
 
     return [_compute_journey_fields(dict(row)) for row in rows]
+
+
+# Mount React Frontend static build directory at root URL (/)
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
+if not os.path.exists(frontend_dist):
+    frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
+if not os.path.exists(frontend_dist):
+    frontend_dist = "frontend/dist"
+
+if os.path.exists(frontend_dist):
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
 
 
 if __name__ == "__main__":
