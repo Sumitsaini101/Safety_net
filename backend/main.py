@@ -1,0 +1,120 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timezone
+from contextlib import asynccontextmanager
+
+from database import get_db, init_db
+from models import JourneyCreate, JourneyResponse
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize database on startup."""
+    init_db()
+    yield
+
+
+app = FastAPI(
+    title="SafeJourney API",
+    description="Personal Safety Check-in System for solo commuters and late-night workers",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+def _compute_journey_fields(row: dict) -> JourneyResponse:
+    """Compute derived fields (is_expired, remaining_seconds) for a journey row."""
+    start_time = datetime.fromisoformat(row["start_time"])
+    now = datetime.now(timezone.utc)
+    elapsed_seconds = (now - start_time).total_seconds()
+    total_seconds = row["expected_duration_minutes"] * 60
+    remaining = int(total_seconds - elapsed_seconds)
+
+    status = row["status"]
+    is_expired = False
+
+    if status == "active" and remaining <= 0:
+        is_expired = True
+        # Auto-update status to SOS in the database
+        conn = get_db()
+        conn.execute("UPDATE journeys SET status = 'sos' WHERE id = ?", (row["id"],))
+        conn.commit()
+        conn.close()
+        status = "sos"
+
+    return JourneyResponse(
+        id=row["id"],
+        destination=row["destination"],
+        start_time=row["start_time"],
+        expected_duration_minutes=row["expected_duration_minutes"],
+        status=status,
+        is_expired=is_expired,
+        remaining_seconds=max(remaining, 0) if status == "active" else 0,
+    )
+
+
+@app.post("/api/journey", response_model=JourneyResponse, status_code=201)
+def create_journey(journey: JourneyCreate):
+    """Create a new journey with a destination and expected duration."""
+    conn = get_db()
+    now = datetime.now(timezone.utc).isoformat()
+    cursor = conn.execute(
+        "INSERT INTO journeys (destination, start_time, expected_duration_minutes, status) VALUES (?, ?, ?, ?)",
+        (journey.destination, now, journey.expected_duration_minutes, "active"),
+    )
+    conn.commit()
+    journey_id = cursor.lastrowid
+
+    row = conn.execute("SELECT * FROM journeys WHERE id = ?", (journey_id,)).fetchone()
+    conn.close()
+
+    return _compute_journey_fields(dict(row))
+
+
+@app.put("/api/journey/{journey_id}/safe", response_model=JourneyResponse)
+def mark_safe(journey_id: int):
+    """Mark a journey as safely completed."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM journeys WHERE id = ?", (journey_id,)).fetchone()
+
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Journey not found")
+
+    if row["status"] != "active":
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Journey is already marked as '{row['status']}' and cannot be updated",
+        )
+
+    conn.execute("UPDATE journeys SET status = 'safe' WHERE id = ?", (journey_id,))
+    conn.commit()
+
+    row = conn.execute("SELECT * FROM journeys WHERE id = ?", (journey_id,)).fetchone()
+    conn.close()
+
+    return _compute_journey_fields(dict(row))
+
+
+@app.get("/api/journeys", response_model=list[JourneyResponse])
+def get_journeys():
+    """Return all journeys with computed status (expired active journeys become SOS)."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM journeys ORDER BY id DESC").fetchall()
+    conn.close()
+
+    return [_compute_journey_fields(dict(row)) for row in rows]
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
